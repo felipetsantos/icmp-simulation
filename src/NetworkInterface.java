@@ -25,6 +25,7 @@ public class NetworkInterface {
     
     private String macAddr;
     
+    
     public String getIpAddr(){
         return ipAddr;
     }

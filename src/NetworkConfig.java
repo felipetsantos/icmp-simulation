@@ -11,6 +11,6 @@
 public class NetworkConfig {
    public int numberOfInterfaces;
    public String ipAddr;
-   public LinkNetwork channel;
+   public NodeNetworkChannelWrapper channel;
    public NetworkInterface[] interfaces;
 }

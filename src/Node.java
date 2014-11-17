@@ -15,12 +15,12 @@ public class Node implements CSProcess {
 
 	// Nome do host/nodo;
 	protected String nodeName;
-        protected NetworkInterface eth0;
         
+   
         
         
         protected NetworkInterface interfaces[];
-       
+        
 	public Node(String nodeName) {
 		
 		this.nodeName = nodeName;
@@ -104,7 +104,7 @@ public class Node implements CSProcess {
         }
 
 
-    public void connect(int portA,Node nodeB, int portB, LinkNetwork chan) {
+    public void connect(int portA,Node nodeB, int portB, NodeNetworkChannelWrapper chan) {
         
         this.interfaces[portA].setIn(chan.chanA.in());
         this.interfaces[portA].setOut(chan.chanB.out());

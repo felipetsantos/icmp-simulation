@@ -37,7 +37,7 @@ public  class Topology {
     public void setProcesses(CSProcess[] processes){
         this.processes = processes;
     }
-    private static NetworkConfig getComputerConfig(String ip,int mtu,LinkNetwork chan){
+    private static NetworkConfig getComputerConfig(String ip,int mtu,NodeNetworkChannelWrapper chan){
         NetworkConfig configComputer = new NetworkConfig();
         configComputer.numberOfInterfaces = 1;
         NetworkInterface  eth0 = new NetworkInterface();
@@ -80,17 +80,17 @@ public  class Topology {
         
         Computer computers[] = new Computer[4];
         final One2OneChannel cons[] = new One2OneChannel[4];
-        NodeConsoleChannelWrapper consoleChans[] = new NodeConsoleChannelWrapper[4];
+        ComputerConsoleChannelWrapper consoleChans[] = new ComputerConsoleChannelWrapper[4];
         
         Node routers[] = new Node[2];
         
-        LinkNetwork[] networkChans = new LinkNetwork[5];
+        NodeNetworkChannelWrapper[] networkChans = new NodeNetworkChannelWrapper[5];
         
         // Cria os computadores e conecta eles aos consoles
         for(int i=0;i<4;i++){
             computers[i] = new Computer("Computador "+i);
             cons[i] = Channel.one2one();
-            consoleChans[i] = new NodeConsoleChannelWrapper(computers[i],cons[i].out(),cons[i].in());
+            consoleChans[i] = new ComputerConsoleChannelWrapper(computers[i],cons[i].out(),cons[i].in());
             computers[i].setChanConsole(consoleChans[i]);
         }
 
@@ -134,7 +134,7 @@ public  class Topology {
  
         // Cria os Canais
         for(int i=0;i<5;i++){
-            networkChans[i] = new LinkNetwork();
+            networkChans[i] = new NodeNetworkChannelWrapper();
         }
         
         // Computer0
@@ -187,17 +187,17 @@ public  class Topology {
     public static Topology getTopology2(){
         Computer computers[] = new Computer[4];
         final One2OneChannel cons[] = new One2OneChannel[4];
-        NodeConsoleChannelWrapper consoleChans[] = new NodeConsoleChannelWrapper[4];
+        ComputerConsoleChannelWrapper consoleChans[] = new ComputerConsoleChannelWrapper[4];
         
         Node routers[] = new Node[4];
         
-        LinkNetwork[] networkChans = new LinkNetwork[8];
+        NodeNetworkChannelWrapper[] networkChans = new NodeNetworkChannelWrapper[8];
         
         // Cria os computadores e conecta eles aos consoles
         for(int i=0;i<4;i++){
             computers[i] = new Computer("Computador "+i);
             cons[i] = Channel.one2one();
-            consoleChans[i] = new NodeConsoleChannelWrapper(computers[i],cons[i].out(),cons[i].in());
+            consoleChans[i] = new ComputerConsoleChannelWrapper(computers[i],cons[i].out(),cons[i].in());
             computers[i].setChanConsole(consoleChans[i]);
         }
 
@@ -275,7 +275,7 @@ public  class Topology {
  
         // Cria os Canais
         for(int i=0;i<8;i++){
-            networkChans[i] = new LinkNetwork();
+            networkChans[i] = new NodeNetworkChannelWrapper();
         }
         
         // Computer0

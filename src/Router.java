@@ -13,7 +13,7 @@ public class Router extends Node {
     
     // tabela de rotas
     private Hashtable<String,TableLine> table;
-    private NetworkInterface[] eth;
+    
 
     public Router(String nodeName,Hashtable<String,TableLine> table) {
             super(nodeName);
@@ -77,7 +77,7 @@ public class Router extends Node {
     }
     
 
-        protected void recivePkt(Package pkt,int port) {
+           protected void recivePkt(Package pkt,int port) {
                //System.out.println("["+this.nodeName+"] recebeu: "+pkt.toString());
                this.forwardPkt(pkt, port);
            }

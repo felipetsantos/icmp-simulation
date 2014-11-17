@@ -24,7 +24,7 @@ public class PackageICMPEchoRequest extends Package {
     
     @Override
     public String toString(){
-        return "Pacotes ICMP Echo Request:<"+this.srcMac+">-><"+this.dstMac+">|<"+this.srcIp+">-><"+this.dstIp+">,TTL="+this.ttl+"|ICMP_ECHOREQUEST";
+        return "Pacotes ICMP Echo Request:<"+this.srcMac+">-><"+this.dstMac+">|ARP_REQUEST,<"+this.dstIp+">\n";
     }
 
 }
