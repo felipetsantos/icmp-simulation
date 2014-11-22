@@ -32,6 +32,11 @@ public class CommandConsole {
 		switch(command){
 			case "ping":
 				// Executa o ping
+				GenericNode node =topology.getNode(src);
+				GenericNode dstNode =topology.getNode(dst);
+				NetworkInterface eth0 = node.getEth(0);
+				PackageARP arp = new PackageARP(eth0.getMacAddr(),"FF:FF:FF:FF:FF:FF", dstNode.getEth(0).getIpAddr());
+				node.sendPkt(((Package)arp),0);
 				System.out.print("ping");
 				break;
 			case "traceroute":

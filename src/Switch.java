@@ -21,4 +21,8 @@ public class Switch extends GenericNode  {
 	 	SwitchTableLine tbline = new SwitchTableLine(mac, port);
 	 	table.put(mac,tbline );
 	 }
+	 
+	 public SwitchTableLine getTableLine(String mac){
+		 return table.get(mac);
+	 }
 }

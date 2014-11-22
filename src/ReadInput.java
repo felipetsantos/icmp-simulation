@@ -133,6 +133,7 @@ public class ReadInput {
 			eth0.setGetwayIp(getwayIp);
 			eths[0] = eth0;
 			Node node = new Node(nodeID);
+			eth0.setNode(node);
 			node.setEths(eths);
 			return node;
 			
@@ -141,15 +142,17 @@ public class ReadInput {
 		public  Router initRouter(String[] routerProperties) {
 			String routerID = routerProperties[0];
 			int numPorts = Integer.parseInt(routerProperties[1]);
+			Router r = new Router(routerID);
 			NetworkInterface eths[] = new NetworkInterface[numPorts];
 			for(int i=0,j=2;i<numPorts;i++,j=j+2){
 				eths[i] = new NetworkInterface();
+				eths[i].setNode(r);
 				String mac = routerProperties[j];
 				String ip = routerProperties[j+1];
 				eths[i].setMacAddr(mac);
 				eths[i].setMacAddr(ip);
 			}
-			Router r = new Router(routerID);
+			
 			r.setEths(eths);
 
 			return r;
@@ -180,12 +183,14 @@ public class ReadInput {
 		public Switch initSwitch(String[] switchProperties) {
 			String switchId = switchProperties[0];
 			int numPorts = Integer.parseInt(switchProperties[1]);
+			Switch s = new Switch(switchId,numPorts);
 			NetworkInterface eths[] = new NetworkInterface[numPorts];
 			for(int i=0;i<numPorts;i++){
 				eths[i] = new NetworkInterface();
+				eths[i].setNode(s);
 			}
 
-			Switch s = new Switch(switchId,numPorts);
+			
 			s.setEths(eths);
 			return s;
 		}

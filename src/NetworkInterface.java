@@ -16,6 +16,8 @@ public class NetworkInterface {
 
     private NetworkLink link;
     
+    private GenericNode node;
+    
     public String getGetwayIp(){
         return getwayIp;
     }
@@ -68,6 +70,14 @@ public class NetworkInterface {
 
 	public void setLink(NetworkLink link) {
 		this.link = link;
+	}
+
+	public GenericNode getNode() {
+		return node;
+	}
+
+	public void setNode(GenericNode node) {
+		this.node = node;
 	}
    
     

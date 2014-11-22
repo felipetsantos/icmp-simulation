@@ -1,31 +1,37 @@
 
 
-import java.util.UUID;
+public class PackageARP extends Package {
 
+   
+	private ARPModes mode;
 
-public class PackageARP {
+    public PackageARP(String srcMac, String dstMac, String dstIp) {
+		super(srcMac, dstMac, dstIp);
+		this.type = PackageTypes.ARP;
+		this.mode = ARPModes.REQUEST;
+	}
 
-	public String dstMac;
-	public String srcMac;
-    public String dstIp;
-    public String srcIp;
-    
-    public PackageARP(String srcMac,String dstMac,String srcIp,String dstIp){
-        this.srcIp = srcIp;
-        this.dstMac = dstMac;
-        this.srcMac = srcMac;
-        this.dstIp = dstIp;
-    }
-    
-    public String getAnswer(ARPTypes type){
-    	switch(type){
-    	case REPLY:
-    		return ""+this.srcMac+"->"+this.dstMac+"|ARP_REPLY,"+this.srcIp+"="+this.srcMac+"\n";
-    	case REQUEST: 
-    		return ""+this.srcMac+"->"+this.dstMac+"|ARP_REQUEST, "+this.dstIp+"?\n";
+    public PackageARP(String srcMac, String dstMac, String srcIp, String dstIp) {
+		super(srcMac, dstMac, srcIp, dstIp);
+		this.type = PackageTypes.ARP;
+		this.mode =  ARPModes.REPLY;
+	}
+	public String getStr(){
+    	switch(mode){
+	    	case REPLY:
+	    		return ""+this.srcMac+"->"+this.dstMac+"|ARP_REPLY,"+this.srcIp+"="+this.srcMac+"\n";
+	    	case REQUEST: 
+	    		return ""+this.srcMac+"->"+this.dstMac+"|ARP_REQUEST, "+this.dstIp+"?\n";
+	    	default:
+	    		return "";
     	}
-    	return "";
     	
     }
+	
+	public ARPModes getMode(){
+		return mode;
+	}
+
+
 
 }
