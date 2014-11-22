@@ -1,30 +1,28 @@
 
-import org.jcsp.lang.AltingChannelInput;
-import org.jcsp.lang.ChannelOutput;
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author Felipe
- */
 public class NetworkInterface {
 
-    private AltingChannelInput in;
+    private String in;
 
     // Canal de saida de dados do nodo;
-    private ChannelOutput out;
+    private String out;
     
     private int mtu;
     
     private String ipAddr;
     
-    private String macAddr;
+    private String getwayIp;
     
+    private String macAddr;
+
+    private NetworkLink link;
+    
+    public String getGetwayIp(){
+        return getwayIp;
+    }
+
+    public void setGetwayIp(String ip){
+       this.getwayIp = ip;
+    }
     
     public String getIpAddr(){
         return ipAddr;
@@ -50,19 +48,27 @@ public class NetworkInterface {
        this.mtu = mtu;
     }
         
-    public void setIn(AltingChannelInput in){
+    public void setIn(String in){
         this.in = in;
     }
-    public void setOut(ChannelOutput out){
+    public void setOut(String out){
          this.out  = out;
     }
     
-    public AltingChannelInput getIn(){
+    public String getIn(){
         return this.in;
     }
-    public ChannelOutput getOut(){
+    public String getOut(){
         return this.out;
     }
+
+	public NetworkLink getLink() {
+		return link;
+	}
+
+	public void setLink(NetworkLink link) {
+		this.link = link;
+	}
    
     
 }
