@@ -35,9 +35,12 @@ public class CommandConsole {
 				GenericNode node =topology.getNode(src);
 				GenericNode dstNode =topology.getNode(dst);
 				NetworkInterface eth0 = node.getEth(0);
+				
 				PackageARP arp = new PackageARP(eth0.getMacAddr(),"FF:FF:FF:FF:FF:FF", dstNode.getEth(0).getIpAddr());
+				node.setWaitCommand(command);
+				node.setSrc(src);
+				node.setDst(dst);
 				node.sendPkt(((Package)arp),0);
-				System.out.print("ping");
 				break;
 			case "traceroute":
 				//Executa o traceroute
@@ -49,5 +52,20 @@ public class CommandConsole {
 	}
 	
 	
+	
+	public void executePing(String src,String dst){
+		// Verifica se os ips são da mesma rede
+		if(true){
+			//Envia o ARP Request com os Ip do nodo destino
+			//Imprime resposta
+			//Envia o ICMP ECHO Request
+		}else{
+			//Envia o ARP Request com o Ip do getway
+			//Imprime resposta
+			//Evia o ICMP ECHO REQUEST com o MAC do Getway
+			//Imprime resposta
+			
+		}
+	}
 
 }

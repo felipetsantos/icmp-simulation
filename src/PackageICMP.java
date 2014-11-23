@@ -28,9 +28,10 @@ public class PackageICMP extends Package  {
     	
     	switch(mode){
 			case ICMP_ECHO_REPLY:
-				return  "<"+this.srcMac+">-><"+this.dstMac+">|<"+this.srcIp+">-><"+this.dstIp+">,TTL="+this.ttl+"|ICMP_ECHOREPLY";
+				return  "<"+this.srcMac+">-><"+this.dstMac+">|<"+this.srcIp+">-><"+this.dstIp+">,TTL="+this.ttl+"|ICMP_ECHOREPLY\n";
 			case  ICMP_ECHO_REQUEST:
-				 return ""+this.srcMac+">-><"+this.dstMac+">|ARP_REQUEST,<"+this.dstIp+">\n";
+				//00:00:00:00:00:01->00:00:00:00:00:02|192.168.0.1->192.168.0.2,TTL=8|ICMP_ECHOREQUEST 
+				return ""+this.srcMac+">-><"+this.dstMac+">|<"+this.srcIp+">-><"+this.dstIp+">,TTL="+this.ttl+"|ICMP_ECHOREQUEST\n";
 			case  ICMP_TIME_EXCEECED:
 				return "<"+this.srcMac+">-><"+this.dstMac+">|<"+this.srcIp+">-><"+this.dstIp+">,TTL="+this.ttl+"|ICMP_TIMEEXCEEDED";
     	}
