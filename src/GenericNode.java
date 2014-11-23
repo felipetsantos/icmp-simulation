@@ -164,23 +164,16 @@ public class GenericNode {
 			//Envia um ARP Request para descobrir o MAC da maquina destino
 			//Pega a porta do IP de destino
 			Router r = (Router)this;
-			String netIp = getNetworkAddress(pkt.srcIp);
+			String netIp = getNetworkAddress(pkt.getBeginIp());
 			RouterTableLine tbln = r.getTableLine(netIp);
-			NetworkInterface srcEth = r.getEth(port);
 			NetworkInterface dstEth = r.getEth(tbln.getPort());
+			Object[] objs = getConnectNode(tbln.getPort());
+			String dstMac = ((GenericNode)objs[0]).getEth(((int)objs[1])).getMacAddr();
 
 			
-			PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),dstEth.getMacAddr(),pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REPLY);
-			//String dstNetIp = getNetworkAddress(dstEth.getIpAddr());
-			// Testa se o Ip de destino é da mesma rede
-			//PackageICMP icmp;
-
-			//arp.setBeginIp(pkt.getBeginIp());
-			//arp.setEndIp(pkt.getEndIP());
-			//this.sendPkt(arp,tbln.getPort());
-			//PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REPLY);
-			///newpkt.setBeginIp(pkt.getBeginIp());
-			//newpkt.setEndIp(pkt.getEndIP());
+			PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),dstMac,pkt.getEndIP(),pkt.getBeginIp(),ICMPModes.ICMP_ECHO_REPLY);
+			newpkt.setBeginIp(pkt.getBeginIp());
+			newpkt.setEndIp(pkt.getEndIP());
 			sendICMPPkt(newpkt,tbln.getPort());
 		}
 	}
