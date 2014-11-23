@@ -20,6 +20,9 @@ public class PackageICMP extends Package  {
 		return ttl;
 		
 	}
+	public void setTTL(int ttl){
+		this.ttl = ttl;
+	}
 	public void decrementTTL(){
 		ttl--;
 	}

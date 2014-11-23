@@ -4,10 +4,11 @@ public class PackageARP extends Package {
 
    
 	private ARPModes mode;
-
+	private int TTL;
     public PackageARP(String srcMac, String dstMac, String dstIp) {
 		super(srcMac, dstMac, dstIp);
 		this.type = PackageTypes.ARP;
+		this.TTL = 8;
 		this.mode = ARPModes.REQUEST;
 	}
 
@@ -30,6 +31,14 @@ public class PackageARP extends Package {
 	
 	public ARPModes getMode(){
 		return mode;
+	}
+
+	public int getTTL() {
+		return TTL;
+	}
+
+	public void setTTL(int tTL) {
+		TTL = tTL;
 	}
 
 

@@ -102,7 +102,7 @@ public class GenericNode {
 			// Testa se o pacote está endereçado para esse Node
 			if(getEth(0).getMacAddr().equals(pkt.dstMac)){
 				// PACOTE esta endereçado para esse node
-				PackageICMP newpkt = new PackageICMP(getEth(0).getMacAddr(),pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REPLY);
+				PackageICMP newpkt = new PackageICMP(getEth(0).getMacAddr(),pkt.srcMac,pkt.getEndIP(),pkt.getBeginIp(),ICMPModes.ICMP_ECHO_REPLY);
 				newpkt.setBeginIp(pkt.getBeginIp());
 				newpkt.setEndIp(pkt.getEndIP());
 				sendICMPPkt(newpkt,0);
