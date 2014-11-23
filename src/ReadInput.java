@@ -150,7 +150,7 @@ public class ReadInput {
 				String mac = routerProperties[j];
 				String ip = routerProperties[j+1];
 				eths[i].setMacAddr(mac);
-				eths[i].setMacAddr(ip);
+				eths[i].setIpAddr(ip);
 			}
 			
 			r.setEths(eths);

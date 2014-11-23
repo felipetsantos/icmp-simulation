@@ -1,11 +1,10 @@
-
 public class GenericNode {
 	private String name;
 	private NodeTypes type;
 	private NetworkInterface[] eths;
 	private String waitCommand;
-	private String dst;
-	private String src;
+	private GenericNode  dst;
+	private GenericNode src;
 	
 	public GenericNode(String nodeName) {
 		
@@ -75,14 +74,16 @@ public class GenericNode {
 		Object[] objs = this.getConnectNode(port);
 		switch(icmp.getMode()){
 			case ICMP_ECHO_REQUEST:
-					if(this.type == NodeTypes.NODE){
-						System.out.print(icmp.getStr());
-					}
+					
+					System.out.print(icmp.getStr());
+					
 					((GenericNode)(objs[0])).reciveData(icmp,((int)objs[1]));
 				break;
 			case ICMP_ECHO_REPLY:
 				((GenericNode)(objs[0])).reciveData(icmp,((int)objs[1]));
-			break;
+				break;
+			default:
+				break;
 		}
 	}
 	private void reciveICMPPkt(PackageICMP pkt,int port){
@@ -99,9 +100,11 @@ public class GenericNode {
 	private void reciveICMPRequest(PackageICMP pkt,int port){
 		if(this.type == NodeTypes.NODE){
 			// Testa se o pacote está endereçado para esse Node
-			if(getEth(0).getIpAddr().equals(pkt.dstIp)){
+			if(getEth(0).getMacAddr().equals(pkt.dstMac)){
 				// PACOTE esta endereçado para esse node
-				PackageICMP newpkt = new PackageICMP(getEth(0).getMacAddr(),pkt.srcMac,pkt.dstIp,pkt.srcIp,ICMPModes.ICMP_ECHO_REPLY);
+				PackageICMP newpkt = new PackageICMP(getEth(0).getMacAddr(),pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REPLY);
+				newpkt.setBeginIp(pkt.getBeginIp());
+				newpkt.setEndIp(pkt.getEndIP());
 				sendICMPPkt(newpkt,0);
 			}
 		}else if(this.type == NodeTypes.SWITCH){
@@ -114,10 +117,26 @@ public class GenericNode {
 				System.out.print("O ICMP_ECHO_REPLY não pode ser entregue");
 			}
 		}else if(this.type == NodeTypes.ROUTER){
-			//Envia um ARP Request para descobrir o MAC da maquina destino
-			// Pega a porta do IP de destino
-			// Testa se o Ip de destino é da mesma rede
-			//PackageARP arp = new PackageARP(eth0.getMacAddr(),"FF:FF:FF:FF:FF:FF", dstNode.getEth(0).getIpAddr());
+			if(getEth(port).getMacAddr().equals(pkt.dstMac)){
+				//Envia um ARP Request para descobrir o MAC da maquina destino
+				//Pega a porta do IP de destino
+				Router r = (Router)this;
+				String netIp = getNetworkAddress(pkt.dstIp);
+				RouterTableLine tbln = r.getTableLine(netIp);
+				NetworkInterface srcEth = r.getEth(port);
+				NetworkInterface dstEth = r.getEth(tbln.getPort());
+				String dstNetIp = getNetworkAddress(dstEth.getIpAddr());
+				// Testa se o Ip de destino é da mesma rede
+				PackageARP arp;
+				if(netIp.equals(dstNetIp)){
+					arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", pkt.dstIp);
+				}else{
+					arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", tbln.getNextHop());
+				}
+				arp.setBeginIp(pkt.getBeginIp());
+				arp.setEndIp(pkt.getEndIP());
+				this.sendPkt(arp,tbln.getPort());
+			}
 		}
 	}
 	private void reciveICMPReply(PackageICMP pkt,int port){
@@ -141,11 +160,34 @@ public class GenericNode {
 				System.out.print("O ICMP_ECHO_REPLY não pode ser entregue dstMac não encontrado");
 			}
 		}else if(this.type == NodeTypes.ROUTER){
-			
+			System.out.print(pkt.getStr());
+			//Envia um ARP Request para descobrir o MAC da maquina destino
+			//Pega a porta do IP de destino
+			Router r = (Router)this;
+			String netIp = getNetworkAddress(pkt.srcIp);
+			RouterTableLine tbln = r.getTableLine(netIp);
+			//NetworkInterface srcEth = r.getEth(port);
+			NetworkInterface dstEth = r.getEth(tbln.getPort());
+			//String dstNetIp = getNetworkAddress(dstEth.getIpAddr());
+			// Testa se o Ip de destino é da mesma rede
+			//PackageICMP icmp;
+			//if(netIp.equals(dstNetIp)){
+			//	arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", pkt.dstIp);
+			//}else{
+			//	arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", tbln.getNextHop());
+			//}
+			//arp.setBeginIp(pkt.getBeginIp());
+			//arp.setEndIp(pkt.getEndIP());
+			//this.sendPkt(arp,tbln.getPort());
+			//PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REPLY);
+			///newpkt.setBeginIp(pkt.getBeginIp());
+			//newpkt.setEndIp(pkt.getEndIP());
+			//sendICMPPkt(newpkt,0);
 		}
 	}
 	
 	
+	//
 	// Métodos auxilares ARP ---------------------------------
 	private void sendARPPkt(PackageARP arp,int port){
 		
@@ -153,7 +195,7 @@ public class GenericNode {
 		
 		switch(arp.getMode()){
 			case REQUEST:
-					if(this.type == NodeTypes.NODE){
+					if(arp.getMode() == ARPModes.REQUEST){
 						System.out.print(arp.getStr());
 					}
 					((GenericNode)(objs[0])).reciveData(arp,((int)objs[1]));
@@ -167,16 +209,15 @@ public class GenericNode {
 	}
 
 	private void reciveARPPkt(PackageARP pkt,int port){
-		switch (pkt.getMode()) {
-		case REQUEST:
-			this.reciveARPRequest(pkt,port);
-			break;
-		case REPLY:
-
-			this.reciveARPReply(pkt,port);
-			break;
-		default:
-			break;
+		switch(pkt.getMode()) {
+			case REQUEST:
+				this.reciveARPRequest(pkt,port);
+				break;
+			case REPLY:
+				this.reciveARPReply(pkt,port);
+				break;
+			default:
+				break;
 		}
 	}
 	
@@ -186,6 +227,8 @@ public class GenericNode {
 			if(getEth(0).getIpAddr().equals(pkt.dstIp)){
 				// PACOTE esta endereçado para esse node
 				PackageARP newpkt = new PackageARP(getEth(0).getMacAddr(),pkt.srcMac,pkt.dstIp,pkt.srcIp);
+				newpkt.setBeginIp(pkt.getBeginIp());
+				newpkt.setEndIp(pkt.getEndIP());
 				this.sendARPPkt(newpkt,0);
 			}
 		}else if(this.type == NodeTypes.SWITCH){
@@ -196,11 +239,17 @@ public class GenericNode {
 				this.sendARPPkt(pkt,i);
 			}
 		}else if(this.type == NodeTypes.ROUTER){
-			
+			if(getEth(port).getIpAddr().equals(pkt.dstIp)){
+				PackageARP newpkt = new PackageARP(getEth(port).getMacAddr(),pkt.srcMac,pkt.dstIp,pkt.srcIp);
+				newpkt.setBeginIp(pkt.getBeginIp());
+				newpkt.setEndIp(pkt.getEndIP());
+				this.sendARPPkt(newpkt,port);
+			}
 		}
 	}
 
 	private void reciveARPReply(PackageARP pkt,int port){
+		PackageICMP icmp;
 		if(this.type == NodeTypes.NODE){
 			// Testa se o pacote está endereçado para esse Node
 			if(getEth(0).getMacAddr().equals(pkt.dstMac)){
@@ -208,7 +257,10 @@ public class GenericNode {
 				//IMPRIME ARP_REPLY
 				System.out.print(pkt.getStr());
 				//
-				PackageICMP icmp = new PackageICMP(pkt.dstMac,pkt.srcMac,this.getEth(0).getIpAddr(),pkt.srcIp,ICMPModes.ICMP_ECHO_REQUEST);
+				
+				icmp = new PackageICMP(pkt.dstMac,pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REQUEST);
+				icmp.setBeginIp(pkt.getBeginIp());
+				icmp.setEndIp(pkt.getEndIP());
 				this.sendPkt((Package)icmp, 0);
 			}
 		}else if(this.type == NodeTypes.SWITCH){
@@ -222,7 +274,17 @@ public class GenericNode {
 				System.out.print("O ARP_REPLY não pode ser entregue dstMac não encontrado");
 			}
 		}else if(this.type == NodeTypes.ROUTER){
-			
+			if(getEth(port).getMacAddr().equals(pkt.dstMac)){
+				// PACOTE esta endereçado para esse node
+				//IMPRIME ARP_REPLY
+				System.out.print(pkt.getStr());
+				//
+				
+				icmp = new PackageICMP(pkt.dstMac,pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REQUEST);
+				icmp.setBeginIp(pkt.getBeginIp());
+				icmp.setEndIp(pkt.getEndIP());
+				this.sendPkt((Package)icmp, port);
+			}	
 		}
 	}
 	
@@ -245,19 +307,36 @@ public class GenericNode {
 		return objects;
 	}
 
-	public String getSrc() {
+	public GenericNode getSrc() {
 		return src;
 	}
 
-	public void setSrc(String src) {
+	public void setSrc(GenericNode  src) {
 		this.src = src;
 	}
 
-	public String getDst() {
+	public GenericNode  getDst() {
 		return dst;
 	}
 
-	public void setDst(String dst) {
+	public void setDst(GenericNode  dst) {
 		this.dst = dst;
 	}
+	
+	public String getNetworkAddress(String ip){
+		String oct[] = ip.split("\\.");
+		String firstOct = Integer.toBinaryString(Integer.parseInt(oct[0]));
+		if(firstOct.charAt(0) == '0'){
+			return oct[0]+".0.0.0";
+		}else if(firstOct.charAt(0) == '1' && firstOct.charAt(1) == '0'){
+			return oct[0]+"."+oct[1]+".0.0";
+		}else if(firstOct.charAt(0) == '1' && firstOct.charAt(1) == '1'){
+			return oct[0]+"."+oct[1]+"."+oct[2]+".0";
+		}
+		return "";
+		
+		
+	}
+
 }
+

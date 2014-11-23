@@ -35,11 +35,20 @@ public class CommandConsole {
 				GenericNode node =topology.getNode(src);
 				GenericNode dstNode =topology.getNode(dst);
 				NetworkInterface eth0 = node.getEth(0);
-				
-				PackageARP arp = new PackageARP(eth0.getMacAddr(),"FF:FF:FF:FF:FF:FF", dstNode.getEth(0).getIpAddr());
+				String srcNetworkAddress = node.getNetworkAddress(eth0.getIpAddr());
+				String dstNetworkAddress = node.getNetworkAddress(dstNode.getEth(0).getIpAddr());
+				PackageARP arp; 
+				if(dstNetworkAddress.equals(srcNetworkAddress)){
+					arp = new PackageARP(eth0.getMacAddr(),"FF:FF:FF:FF:FF:FF", dstNode.getEth(0).getIpAddr());
+				}else{
+					arp = new PackageARP(eth0.getMacAddr(),"FF:FF:FF:FF:FF:FF", eth0.getGetwayIp());
+					
+				}
+				arp.setBeginIp(node.getEth(0).getIpAddr());
+				arp.setEndIp(dstNode.getEth(0).getIpAddr());
 				node.setWaitCommand(command);
-				node.setSrc(src);
-				node.setDst(dst);
+				node.setSrc(node);
+				node.setDst(dstNode);
 				node.sendPkt(((Package)arp),0);
 				break;
 			case "traceroute":

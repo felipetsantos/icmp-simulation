@@ -22,6 +22,10 @@ public class Router extends GenericNode {
     	RouterTableLine tbline = new RouterTableLine(dst, port, nextHop);
     	table.put(dst,tbline );
     }
+    
+    public RouterTableLine getTableLine(String net){
+    	return table.get(net);
+    }
 
 
 

@@ -7,6 +7,8 @@ public class Package {
 	protected String dstIp;
     protected String srcIp;
     protected PackageTypes type;
+    private String beginIp;
+    private String endIP;
     
     public Package(String srcMac,String dstMac,String srcIp,String dstIp){
         this.srcIp = srcIp;
@@ -27,6 +29,23 @@ public class Package {
     	return "";
     	
     }
+
+	public String getBeginIp() {
+		return beginIp;
+	}
+
+	public void setBeginIp(String beginIp) {
+		this.beginIp = beginIp;
+	}
+
+	public String getEndIP() {
+		return endIP;
+	}
+
+	public void setEndIp(String endIP) {
+		
+		this.endIP = endIP;
+	}
 
 
 
