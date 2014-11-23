@@ -74,9 +74,9 @@ public class GenericNode {
 		Object[] objs = this.getConnectNode(port);
 		switch(icmp.getMode()){
 			case ICMP_ECHO_REQUEST:
-					
-					System.out.print(icmp.getStr());
-					
+					if(this.type == NodeTypes.NODE || this.type == NodeTypes.ROUTER){
+						System.out.print(icmp.getStr());
+					}
 					((GenericNode)(objs[0])).reciveData(icmp,((int)objs[1]));
 				break;
 			case ICMP_ECHO_REPLY:
@@ -190,7 +190,7 @@ public class GenericNode {
 		
 		switch(arp.getMode()){
 			case REQUEST:
-					if(arp.getMode() == ARPModes.REQUEST){
+					if(this.type == NodeTypes.NODE || this.type == NodeTypes.ROUTER){
 						System.out.print(arp.getStr());
 					}
 					((GenericNode)(objs[0])).reciveData(arp,((int)objs[1]));
