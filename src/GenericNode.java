@@ -166,23 +166,22 @@ public class GenericNode {
 			Router r = (Router)this;
 			String netIp = getNetworkAddress(pkt.srcIp);
 			RouterTableLine tbln = r.getTableLine(netIp);
-			//NetworkInterface srcEth = r.getEth(port);
+			NetworkInterface srcEth = r.getEth(port);
 			NetworkInterface dstEth = r.getEth(tbln.getPort());
+
+			
+			PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),dstEth.getMacAddr(),pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REPLY);
 			//String dstNetIp = getNetworkAddress(dstEth.getIpAddr());
 			// Testa se o Ip de destino é da mesma rede
 			//PackageICMP icmp;
-			//if(netIp.equals(dstNetIp)){
-			//	arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", pkt.dstIp);
-			//}else{
-			//	arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", tbln.getNextHop());
-			//}
+
 			//arp.setBeginIp(pkt.getBeginIp());
 			//arp.setEndIp(pkt.getEndIP());
 			//this.sendPkt(arp,tbln.getPort());
 			//PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REPLY);
 			///newpkt.setBeginIp(pkt.getBeginIp());
 			//newpkt.setEndIp(pkt.getEndIP());
-			//sendICMPPkt(newpkt,0);
+			sendICMPPkt(newpkt,tbln.getPort());
 		}
 	}
 	
