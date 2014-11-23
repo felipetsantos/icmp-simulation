@@ -133,6 +133,7 @@ public class GenericNode {
 				}else{
 					arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", tbln.getNextHop());
 				}
+				arp.setTTL(pkt.getTTL());
 				arp.setBeginIp(pkt.getBeginIp());
 				arp.setEndIp(pkt.getEndIP());
 				this.sendPkt(arp,tbln.getPort());
@@ -169,11 +170,13 @@ public class GenericNode {
 			NetworkInterface dstEth = r.getEth(tbln.getPort());
 			Object[] objs = getConnectNode(tbln.getPort());
 			String dstMac = ((GenericNode)objs[0]).getEth(((int)objs[1])).getMacAddr();
-
+			
 			
 			PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),dstMac,pkt.getEndIP(),pkt.getBeginIp(),ICMPModes.ICMP_ECHO_REPLY);
+			newpkt.setTTL(pkt.getTTL());
 			newpkt.setBeginIp(pkt.getBeginIp());
 			newpkt.setEndIp(pkt.getEndIP());
+			newpkt.decrementTTL();
 			sendICMPPkt(newpkt,tbln.getPort());
 		}
 	}
@@ -219,6 +222,7 @@ public class GenericNode {
 			if(getEth(0).getIpAddr().equals(pkt.dstIp)){
 				// PACOTE esta endereçado para esse node
 				PackageARP newpkt = new PackageARP(getEth(0).getMacAddr(),pkt.srcMac,pkt.dstIp,pkt.srcIp);
+				newpkt.setTTL(pkt.getTTL());
 				newpkt.setBeginIp(pkt.getBeginIp());
 				newpkt.setEndIp(pkt.getEndIP());
 				this.sendARPPkt(newpkt,0);
@@ -233,6 +237,7 @@ public class GenericNode {
 		}else if(this.type == NodeTypes.ROUTER){
 			if(getEth(port).getIpAddr().equals(pkt.dstIp)){
 				PackageARP newpkt = new PackageARP(getEth(port).getMacAddr(),pkt.srcMac,pkt.dstIp,pkt.srcIp);
+				newpkt.setTTL(pkt.getTTL());
 				newpkt.setBeginIp(pkt.getBeginIp());
 				newpkt.setEndIp(pkt.getEndIP());
 				this.sendARPPkt(newpkt,port);
@@ -273,8 +278,10 @@ public class GenericNode {
 				//
 				
 				icmp = new PackageICMP(pkt.dstMac,pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REQUEST);
+				icmp.setTTL(pkt.getTTL());
 				icmp.setBeginIp(pkt.getBeginIp());
 				icmp.setEndIp(pkt.getEndIP());
+				icmp.decrementTTL();
 				this.sendPkt((Package)icmp, port);
 			}	
 		}
