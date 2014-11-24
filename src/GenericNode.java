@@ -5,10 +5,12 @@ public class GenericNode {
 	private String waitCommand;
 	private GenericNode  dst;
 	private GenericNode src;
+	private boolean sendReply;
 	
 	public GenericNode(String nodeName) {
 		
 		this.setName(nodeName);
+		sendReply = false;
 	} 
 
 	public void setWaitCommand(String cmd){
@@ -121,6 +123,7 @@ public class GenericNode {
 				//Envia um ARP Request para descobrir o MAC da maquina destino
 				//Pega a porta do IP de destino
 				Router r = (Router)this;
+				r.arpTable.put(pkt.srcIp,pkt.srcMac);
 				String netIp = getNetworkAddress(pkt.dstIp);
 				RouterTableLine tbln = r.getTableLine(netIp);
 				NetworkInterface srcEth = r.getEth(port);
@@ -133,6 +136,7 @@ public class GenericNode {
 				}else{
 					arp = new PackageARP(dstEth.getMacAddr(),"FF:FF:FF:FF:FF:FF", tbln.getNextHop());
 				}
+				arp.srcIp =  dstEth.getIpAddr();
 				arp.setTTL(pkt.getTTL());
 				arp.setBeginIp(pkt.getBeginIp());
 				arp.setEndIp(pkt.getEndIP());
@@ -152,32 +156,49 @@ public class GenericNode {
 				//this.sendPkt((Package)icmp, 0);
 			}
 		}else if(this.type == NodeTypes.SWITCH){
-			// Envia o pacote para todas as portas do switch
+			
 			Switch sw = (Switch)this;
-			SwitchTableLine tbln = sw.getTableLine(pkt.dstMac);
-			if(tbln != null){
-				this.sendICMPPkt(pkt, tbln.getPort());
-			}else{
-				System.out.print("O ICMP_ECHO_REPLY não pode ser entregue dstMac não encontrado");
-			}
+			//if(pkt.dstMac){
+				SwitchTableLine tbln = sw.getTableLine(pkt.dstMac);
+				if(tbln != null){
+					this.sendICMPPkt(pkt, tbln.getPort());
+				}else{
+					System.out.print("O ICMP_ECHO_REPLY não pode ser entregue dstMac não encontrado");
+				}
+			//}
 		}else if(this.type == NodeTypes.ROUTER){
 			System.out.print(pkt.getStr());
 			//Envia um ARP Request para descobrir o MAC da maquina destino
 			//Pega a porta do IP de destino
 			Router r = (Router)this;
+			r.arpTable.put(pkt.srcIp,pkt.srcMac);
 			String netIp = getNetworkAddress(pkt.getBeginIp());
 			RouterTableLine tbln = r.getTableLine(netIp);
-			NetworkInterface dstEth = r.getEth(tbln.getPort());
-			Object[] objs = getConnectNode(tbln.getPort());
-			String dstMac = ((GenericNode)objs[0]).getEth(((int)objs[1])).getMacAddr();
+			String ip = tbln.getNextHop();
 			
+			if(r.arpTable.get(ip) == null && !ip.equals("0.0.0.0")){
+				PackageARP arp = new PackageARP(r.getEth(tbln.getPort()).getMacAddr(),"FF:FF:FF:FF:FF:FF", ip);
+				arp.srcIp = r.getEth(tbln.getPort()).getIpAddr();
+				arp.setBeginIp(pkt.getBeginIp());
+				arp.setEndIp(pkt.getEndIP());
+				this.sendReply = true;
+				sendARPPkt(arp, tbln.getPort());
+			}else{
 			
-			PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),dstMac,pkt.getEndIP(),pkt.getBeginIp(),ICMPModes.ICMP_ECHO_REPLY);
-			newpkt.setTTL(pkt.getTTL());
-			newpkt.setBeginIp(pkt.getBeginIp());
-			newpkt.setEndIp(pkt.getEndIP());
-			newpkt.decrementTTL();
-			sendICMPPkt(newpkt,tbln.getPort());
+				NetworkInterface dstEth = r.getEth(tbln.getPort());
+				Object[] objs = getConnectNode(tbln.getPort());
+				String dstMac= r.arpTable.get(ip);
+				if(ip.equals("0.0.0.0")){
+					dstMac = r.arpTable.get(pkt.getBeginIp());
+				}
+				PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),dstMac,pkt.getEndIP(),pkt.getBeginIp(),ICMPModes.ICMP_ECHO_REPLY);
+				newpkt.setTTL(pkt.getTTL());
+				newpkt.setBeginIp(pkt.getBeginIp());
+				newpkt.setEndIp(pkt.getEndIP());
+				newpkt.decrementTTL();
+				sendICMPPkt(newpkt,tbln.getPort());
+				
+			}
 		}
 	}
 	
@@ -236,6 +257,8 @@ public class GenericNode {
 			}
 		}else if(this.type == NodeTypes.ROUTER){
 			if(getEth(port).getIpAddr().equals(pkt.dstIp)){
+				Router r = (Router)this;
+				r.arpTable.put(pkt.srcIp,pkt.srcMac);
 				PackageARP newpkt = new PackageARP(getEth(port).getMacAddr(),pkt.srcMac,pkt.dstIp,pkt.srcIp);
 				newpkt.setTTL(pkt.getTTL());
 				newpkt.setBeginIp(pkt.getBeginIp());
@@ -276,13 +299,47 @@ public class GenericNode {
 				//IMPRIME ARP_REPLY
 				System.out.print(pkt.getStr());
 				//
-				
-				icmp = new PackageICMP(pkt.dstMac,pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REQUEST);
-				icmp.setTTL(pkt.getTTL());
-				icmp.setBeginIp(pkt.getBeginIp());
-				icmp.setEndIp(pkt.getEndIP());
-				icmp.decrementTTL();
-				this.sendPkt((Package)icmp, port);
+				if(!this.sendReply){
+					Router r = (Router)this;
+					r.arpTable.put(pkt.srcIp,pkt.srcMac);
+					icmp = new PackageICMP(pkt.dstMac,pkt.srcMac,pkt.getBeginIp(),pkt.getEndIP(),ICMPModes.ICMP_ECHO_REQUEST);
+					icmp.setTTL(pkt.getTTL());
+					icmp.setBeginIp(pkt.getBeginIp());
+					icmp.setEndIp(pkt.getEndIP());
+					icmp.decrementTTL();
+					this.sendPkt((Package)icmp, port);
+				}else{
+
+					Router r = (Router)this;
+					r.arpTable.put(pkt.srcIp,pkt.srcMac);
+					String netIp = getNetworkAddress(pkt.getBeginIp());
+					RouterTableLine tbln = r.getTableLine(netIp);
+					String ip = tbln.getNextHop();
+					
+					if(r.arpTable.get(ip) == null && !ip.equals("0.0.0.0")){
+						PackageARP arp = new PackageARP(r.getEth(tbln.getPort()).getMacAddr(),"FF:FF:FF:FF:FF:FF", ip);
+						arp.srcIp = r.getEth(tbln.getPort()).getIpAddr();
+						arp.setBeginIp(pkt.getBeginIp());
+						arp.setEndIp(pkt.getEndIP());
+						this.sendReply = true;
+						sendARPPkt(arp, tbln.getPort());
+					}else{
+					
+						NetworkInterface dstEth = r.getEth(tbln.getPort());
+						Object[] objs = getConnectNode(tbln.getPort());
+						String dstMac= r.arpTable.get(ip);
+						if(ip.equals("0.0.0.0")){
+							dstMac = r.arpTable.get(pkt.getBeginIp());
+						}
+						PackageICMP newpkt = new PackageICMP(dstEth.getMacAddr(),dstMac,pkt.getEndIP(),pkt.getBeginIp(),ICMPModes.ICMP_ECHO_REPLY);
+						newpkt.setTTL(pkt.getTTL());
+						newpkt.setBeginIp(pkt.getBeginIp());
+						newpkt.setEndIp(pkt.getEndIP());
+						newpkt.decrementTTL();
+						sendICMPPkt(newpkt,tbln.getPort());
+						
+					}
+				}
 			}	
 		}
 	}
